@@ -25,16 +25,15 @@ ZZ = [0,  1,  5,  6,  14, 15, 27, 28,
 jpeg_t *jpegParse(const uint8_t *fileContents, const uint32_t fileSize)
 {
   uint16_t *id = malloc(sizeof(uint16_t));
-  *id = 0;
 
   if (!id)
     return NULL;
+  *id = 0;
   
   uintptr_t *fileSizePtr = malloc(sizeof(uint32_t));
 
   if (!fileSizePtr)
     return NULL;
-
   *fileSizePtr = fileSize;
 
   jpeg_t *jpeg = initJpeg();
@@ -69,7 +68,7 @@ uintptr_t parseHeader(const uint8_t **filePtr, uintptr_t *fileSize, uint16_t *id
   
   const uint16_t *header = (const uint16_t *)(*filePtr);
   
-  switch(*header)
+  switch (*header)
     {
     case JPEG_HEADER_SOI:
       printf("INFO: SOI\n");
@@ -216,7 +215,7 @@ uintptr_t parseData(const uint8_t **filePtr, uintptr_t *fileSize, uint8_t **buff
 }
 
 
-uintptr_t parseBuffer(const uint8_t **filePtr, const uintptr_t *fileSize, uint8_t **buffer)
+uintptr_t parseBuffer(const uint8_t **filePtr, uintptr_t *fileSize, uint8_t **buffer)
 {
 
   if (!filePtr || !fileSize)
@@ -230,6 +229,7 @@ uintptr_t parseBuffer(const uint8_t **filePtr, const uintptr_t *fileSize, uint8_
 
   const uint16_t dataLength = (endian_fix16( (uint16_t *)(*filePtr) )) - 2;
   *filePtr += 2;
+  *fileSize-= 2;
 
   if (*fileSize < dataLength)
     {
@@ -248,6 +248,8 @@ uintptr_t parseBuffer(const uint8_t **filePtr, const uintptr_t *fileSize, uint8_
     }
 
   *buffer = bufferNew;
+
+  *fileSize -= dataLength;
   
   return *fileSize;
 }

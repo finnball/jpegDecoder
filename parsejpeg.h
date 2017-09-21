@@ -13,5 +13,7 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize,
 		    jpeg_t **jpeg, const uint16_t *id);
 int parseBuffer(const uint8_t **filePtr, uint32_t *fileSize,
 		      uint8_t **buffer, uint16_t *bufferLength);
+int parseScan(const uint8_t **filePtr, uint32_t *fileSize,
+	     uint8_t **buffer, uint16_t *bufferLength);
 
 #endif

@@ -55,8 +55,8 @@ static inline uint16_t endian_fix16(uint16_t* x)
 
 typedef struct
 {
-  uint16_t jfifLength, comLength, dqtLength, sof0Length, dhtLength, sosLength, sof2Length;
-  uint8_t *jfif, *com, *dqt, *sof0, *dht, *sos, *sof2;
+  uint16_t jfifLength, comLength, dqtLength, sof0Length, dhtLength, sosLength, sof2Length, scanLength;
+  uint8_t *jfif, *com, *dqt, *sof0, *dht, *sos, *sof2, *scan;
 } jpeg_t;
 
 jpeg_t *initJpeg();

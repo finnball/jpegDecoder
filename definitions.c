@@ -15,6 +15,7 @@ jpeg_t *initJpeg()
   jpeg->dht = NULL;
   jpeg->sof2 = NULL;
   jpeg->sos = NULL;
+  jpeg->scan = NULL;
   
   return jpeg; 
 }
@@ -44,7 +45,10 @@ int freeJpeg(jpeg_t *jpeg)
 
   if (jpeg->sos)
     free(jpeg->sos);
-  
+
+  if (jpeg->scan)
+    free(jpeg->scan);
+
   free(jpeg);
 
   return 0;

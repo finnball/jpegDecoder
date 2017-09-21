@@ -19,7 +19,7 @@ uint32_t read(uint8_t **buffer, const char *fileName)
   
   fseek(fp, 0L, SEEK_END); // Skip to the end to find size
   
-  uint8_t fileSize = ftell(fp);
+  uint32_t fileSize = ftell(fp);
   rewind(fp);
   
   printf("INFO: Filesize %d / 0x%04x bytes \n", fileSize, fileSize);

@@ -46,8 +46,8 @@ jpeg_t *jpegParse(const uint8_t *fileContents, const uint32_t fileSize)
       return NULL;
     }
 
-  //parseHeader(&fileContents, fileSizePtr, id);
-  //parseData(&fileContents, fileSizePtr, &(jpeg->jfif), id);
+  parseHeader(&fileContents, fileSizePtr, id);
+  parseData(&fileContents, fileSizePtr, &(jpeg->jfif), id);
   
   free(id);
   free(fileSizePtr);
@@ -230,10 +230,10 @@ uintptr_t parseBuffer(const uint8_t **filePtr, uint32_t *fileSize, uint8_t **buf
   const uint16_t dataLength = (endian_fix16( (uint16_t *)(*filePtr) )) - 2;
   *filePtr += 2;
   *fileSize-= 2;
-
+  
   if (*fileSize < dataLength)
     {
-      fprintf(stderr, "ERROR: fileSize < %d, cannot read\n", dataLength);
+      fprintf(stderr, "ERROR: fileSize (%d) < dataLength (%d), cannot read\n", *fileSize, dataLength);
       return 0;
     }
 
@@ -241,10 +241,10 @@ uintptr_t parseBuffer(const uint8_t **filePtr, uint32_t *fileSize, uint8_t **buf
 
   if (!bufferNew)
     return 0;
-
+  
   for (uintptr_t i = 0; i < dataLength; ++i)
     {
-      bufferNew[i] = *(*filePtr++);
+      bufferNew[i] = *((*filePtr)++);
     }
 
   *buffer = bufferNew;

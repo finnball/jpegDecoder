@@ -185,19 +185,15 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
       
     case JPEG_HEADER_SOF0:
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->sof0, &(**jpeg).sof0Length));
-      break;
       
     case JPEG_HEADER_SOF2:
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->sof2, &(**jpeg).sof2Length));
-      break;
       
     case JPEG_HEADER_DHT:
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->dht, &(**jpeg).dhtLength));
-      break;
       
     case JPEG_HEADER_DQT:
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->dqt, &(**jpeg).dqtLength));
-      break;
       
     case JPEG_HEADER_DRI:
       printf("ERROR: DRI not supported\n");

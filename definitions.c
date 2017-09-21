@@ -1,13 +1,7 @@
 #include <malloc.h>
 #include "definitions.h"
 
-
-/*uint16_t endian_fix16(uint16_t* x)
-{
-
-}*/
-
-jpeg_t *initJpeg() // add checks
+jpeg_t *initJpeg()
 {
   jpeg_t *jpeg = malloc(sizeof(jpeg_t));
 
@@ -19,8 +13,10 @@ jpeg_t *initJpeg() // add checks
   jpeg->dqt = NULL;
   jpeg->sof0 = NULL;
   jpeg->dht = NULL;
+  jpeg->sof2 = NULL;
+  jpeg->sos = NULL;
   
-  return (jpeg == NULL) ? NULL : jpeg; 
+  return jpeg; 
 }
 
 int freeJpeg(jpeg_t *jpeg)
@@ -43,6 +39,11 @@ int freeJpeg(jpeg_t *jpeg)
   if (jpeg->dht)
     free(jpeg->dht);
 
+  if (jpeg->sof2)
+    free(jpeg->sof2);
+
+  if (jpeg->sos)
+    free(jpeg->sos);
   
   free(jpeg);
 

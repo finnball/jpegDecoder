@@ -28,8 +28,7 @@ clean:
 	rm -f *.o *.d *~ $(EXECUTABLE)
 
 monitor:
-	-@make
-	-./$(EXECUTABLE)
+	-@make && -@./$(EXECUTABLE)
 	@echo "Files watched: " $(SOURCES) $(HEADERS)
 	@echo "Executable: ./" $(EXECUTABLE)
-	@while [[ 1 ]]; do inotifywait -e modify $(SOURCES) $(HEADERS); make && ./$(EXECUTABLE); valgrind $(VFLAGS); done
+	@while [[ 1 ]]; do inotifywait -e modify $(SOURCES) $(HEADERS); make && ./$(EXECUTABLE) && valgrind $(VFLAGS); done

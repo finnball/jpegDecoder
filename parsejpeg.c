@@ -33,19 +33,28 @@ jpeg_t *jpegParse(const uint8_t *fileContents, const uint32_t fileSize)
   
   
   if(parse(&fileContents, &fileSizePtr, &jpeg, &id))
-    return NULL;
+    {
+      freeJpeg(jpeg);
+      return NULL;
+    }
   
   if (id != JPEG_HEADER_SOI)
     {
       fprintf(stderr, "SOI not found at start \n");
+      freeJpeg(jpeg);
       return NULL;
     }
 
   while ( (id != JPEG_HEADER_EOI) && fileSizePtr > 0)
     {
       if(parse(&fileContents, &fileSizePtr, &jpeg, &id))
-	return NULL;
+	{
+	  freeJpeg(jpeg);
+	  return NULL;
+	}
     }
+
+  printf("%02x\n", jpeg->dhtLength[1]);
   
   return jpeg;
 }
@@ -163,15 +172,19 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
   switch (*id)
     {
     case JPEG_HEADER_SOI:
+      
       break;
       
     case JFIF_HEADER:
+      
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->jfif, &(**jpeg).jfifLength));
       
     case JPEG_HEADER_COM:
+      
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->com, &(**jpeg).comLength));
       
     case JPEG_HEADER_SOS:
+      
       if (parseBuffer(filePtr, fileSize, &(*jpeg)->sos, &(**jpeg).sosLength))
 	return 1;
       if (parseScan(filePtr, fileSize, &(*jpeg)->sos, &(**jpeg).sosLength))
@@ -179,25 +192,32 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
       return 0;
       
     case JPEG_HEADER_SOF0:
+      
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->sof0, &(**jpeg).sof0Length));
       
     case JPEG_HEADER_SOF2:
+      
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->sof2, &(**jpeg).sof2Length));
       
-    case JPEG_HEADER_DHT:
-      return (parseBuffer(filePtr, fileSize, &(*jpeg)->dht, &(**jpeg).dhtLength));
-      
     case JPEG_HEADER_DQT:
+      
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->dqt, &(**jpeg).dqtLength));
       
+    case JPEG_HEADER_DHT:
+      
+      return (parseDHT(filePtr, fileSize, jpeg));
+      
     case JPEG_HEADER_DRI:
+      
       printf("ERROR: DRI not supported\n");
       return 1;
             
     case JPEG_HEADER_EOI:
+      
       break;
           
     default:
+      
       fprintf(stderr, "ERROR: Header not detected \n");
       return 1;
     }
@@ -280,3 +300,29 @@ int parseScan(const uint8_t **filePtr, uint32_t *fileSize,
   return 0;
 }
 
+int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg)
+{
+  
+  const uint16_t nHt = ((*jpeg)->dhtN) + 1;
+  
+  uint16_t *dhtLengthNew = realloc((*jpeg)->dhtLength, nHt * sizeof(uint16_t));
+  if (!dhtLengthNew) 
+    return 1;
+  
+  uint8_t **dhtNew = realloc((*jpeg)->dht, nHt * sizeof(uint8_t));
+  if (!dhtNew)
+    return 1;
+
+  dhtNew[nHt - 1] = NULL;
+  
+  if(parseBuffer(filePtr, fileSize, &dhtNew[nHt - 1], &dhtLengthNew[nHt - 1]))
+    return 1;
+
+  printf(">%02x\n",dhtLengthNew[nHt - 1]);
+
+  ((*jpeg)->dhtN) = nHt;
+  (*jpeg)->dht = dhtNew;
+  (*jpeg)->dhtLength = dhtLengthNew;
+
+  return 0;
+}

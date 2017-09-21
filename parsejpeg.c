@@ -45,9 +45,6 @@ jpeg_t *jpegParse(const uint8_t *fileContents, const uint32_t fileSize)
     {
       if(parse(&fileContents, &fileSizePtr, &jpeg, &id))
 	return NULL;
-
-      if(id == JPEG_HEADER_DHT)
-	dumpFilePtr(&fileContents, 13);
     }
   
   return jpeg;
@@ -163,12 +160,6 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
   if (!filePtr || !fileSize || !id)
     return 1;
 
-  if (*fileSize < 2)
-    {
-      fprintf(stderr, "ERROR: fileSize < 2, cannot read\n");
-      return 1;
-    }
-  
   switch (*id)
     {
     case JPEG_HEADER_SOI:
@@ -212,6 +203,48 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
 
 int parseBuffer(const uint8_t **filePtr, uint32_t *fileSize,
 		      uint8_t **buffer, uint16_t *bufferLength)
+{
+  if (!filePtr || !fileSize || !bufferLength)
+    return 1;
+  
+  if (*fileSize < 2)
+    {
+      fprintf(stderr, "ERROR: fileSize < 2, cannot read\n");
+      return 1;
+    }
+  
+  const uint16_t dataLength = (endian_fix16( (uint16_t *)(*filePtr) )) - 2;
+  
+  *filePtr += 2;
+  *fileSize-= 2;
+  
+  if (*fileSize < dataLength)
+    {
+      fprintf(stderr, "ERROR: fileSize (%d) < dataLength (%d), cannot read\n", *fileSize, dataLength);
+      return 1;
+    }
+
+  uint8_t *bufferNew = realloc( *buffer, (dataLength) * sizeof(uint8_t) );
+
+  if (!bufferNew)
+    return 1;
+
+  for (uintptr_t i = 0; i < dataLength; ++i)
+    {
+      bufferNew[i] = *((*filePtr)++);
+    }
+
+  *buffer = bufferNew;
+
+  *fileSize -= dataLength;
+
+  *bufferLength = dataLength;
+  
+  return 0;
+}
+ 
+int parseSOS(const uint8_t **filePtr, uint32_t *fileSize,
+	     uint8_t **buffer, uint16_t *bufferLength)
 {
   if (!filePtr || !fileSize || !bufferLength)
     return 1;

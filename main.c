@@ -28,25 +28,27 @@ int main(int argc, char* argv[])
 
   if ( (fileSize == 0) || !(fileContents) ) 
     {
-      return -1; 
+      return 1; 
     }
   
   //parse file
   
   jpeg_t *jpeg = jpegParse(fileContents, fileSize);
+  free(fileContents);
 
-  if (!jpeg)
-    return -1;
-
+  if(!jpeg)
+    {
+      fprintf(stderr, "ERROR: jpeg not parsed\n");
+      return 1;
+    }
+  
   //decode jpeg
   //decode(jpeg);
   
   //write file
   //write(jpeg, type)
 
-  freeJpeg(jpeg);
-  
-  free(fileContents);
+  freeJpeg(jpeg);  
     
   printf("Finished.\n");
   return 0;

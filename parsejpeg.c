@@ -56,8 +56,6 @@ jpeg_t *jpegParse(const uint8_t *fileContents, const uint32_t fileSize)
       //if(id == JPEG_HEADER_SOF0)
       //dumpFilePtr(&fileContents, 5);
     }
-
-  //printf("%02x\n", jpeg->dhtLength[1]);
   
   return jpeg;
 }
@@ -207,7 +205,7 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
       return (parseBuffer(filePtr, fileSize, &(*jpeg)->dqt, &(**jpeg).dqtLength));
       
     case JPEG_HEADER_DHT:
-      
+
       return (parseDHT(filePtr, fileSize, jpeg));
       
     case JPEG_HEADER_DRI:
@@ -226,7 +224,6 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
     }
   return 0;
 }
-
 
 int parseBuffer(const uint8_t **filePtr, uint32_t *fileSize,
 		      uint8_t **buffer, uint16_t *bufferLength)
@@ -304,7 +301,16 @@ int parseScan(const uint8_t **filePtr, uint32_t *fileSize,
 }
 
 int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg)
-{
+{  
+  if (!filePtr || !fileSize)
+    return 1;
+  
+  if (*fileSize < 2)
+    {
+      fprintf(stderr, "ERROR: fileSize < 2, cannot read\n");
+      return 1;
+    }
+  const uint16_t dataLength = (endian_fix16( (uint16_t *)(*filePtr) )) - 2;
   
   const uint16_t nHt = ((*jpeg)->dhtN) + 1;
   
@@ -312,20 +318,19 @@ int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg)
   if (!dhtLengthNew) 
     return 1;
   
-  uint8_t **dhtNew = realloc((*jpeg)->dht, nHt * sizeof(uint8_t));
+  uint8_t **dhtNew = dhtNew = realloc((*jpeg)->dht,
+				      (dataLength * sizeof(uint8_t)) + sizeof((*jpeg)->dht));
   if (!dhtNew)
     return 1;
-
-  dhtNew[nHt - 1] = NULL;
   
+  dhtNew[nHt - 1] = NULL;
+
   if(parseBuffer(filePtr, fileSize, &dhtNew[nHt - 1], &dhtLengthNew[nHt - 1]))
     return 1;
-
-  //printf(">%02x\n",dhtLengthNew[nHt - 1]);
 
   ((*jpeg)->dhtN) = nHt;
   (*jpeg)->dht = dhtNew;
   (*jpeg)->dhtLength = dhtLengthNew;
-
+  
   return 0;
 }

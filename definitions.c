@@ -18,6 +18,7 @@ jpeg_t *initJpeg()
 
   jpeg->dhtN = 0;
   jpeg->dhtLength = NULL;
+  jpeg->dht = NULL;
   
   return jpeg; 
 }

@@ -52,9 +52,12 @@ jpeg_t *jpegParse(const uint8_t *fileContents, const uint32_t fileSize)
 	  freeJpeg(jpeg);
 	  return NULL;
 	}
+
+      //if(id == JPEG_HEADER_SOF0)
+      //dumpFilePtr(&fileContents, 5);
     }
 
-  printf("%02x\n", jpeg->dhtLength[1]);
+  //printf("%02x\n", jpeg->dhtLength[1]);
   
   return jpeg;
 }
@@ -187,7 +190,7 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
       
       if (parseBuffer(filePtr, fileSize, &(*jpeg)->sos, &(**jpeg).sosLength))
 	return 1;
-      if (parseScan(filePtr, fileSize, &(*jpeg)->sos, &(**jpeg).sosLength))
+      if (parseScan(filePtr, fileSize, &(*jpeg)->scan, &(**jpeg).scanLength))
 	return 1;
       return 0;
       
@@ -318,7 +321,7 @@ int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg)
   if(parseBuffer(filePtr, fileSize, &dhtNew[nHt - 1], &dhtLengthNew[nHt - 1]))
     return 1;
 
-  printf(">%02x\n",dhtLengthNew[nHt - 1]);
+  //printf(">%02x\n",dhtLengthNew[nHt - 1]);
 
   ((*jpeg)->dhtN) = nHt;
   (*jpeg)->dht = dhtNew;

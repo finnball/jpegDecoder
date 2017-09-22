@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "definitions.h"
 
-int jpegDecode(jpeg_t *jpeg);
+int jpegDecode(const jpeg_t *jpeg);
+
+int decodeHT(const uint8_t *data, const uint16_t length);
 
 #endif

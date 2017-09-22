@@ -62,6 +62,16 @@ typedef struct
   uint8_t **dht, **dqt;
 } jpeg_t;
 
+
+typedef struct
+{
+  uint8_t id; // id e.g Y or colour                                                                     
+  uint8_t type; // 0:DC 1:AC                                                                            
+  uint16_t nSymbols[16];
+  uint16_t symbols[];
+}ht_t;
+
+
 jpeg_t *initJpeg();
 int freeJpeg(jpeg_t *jpeg);
 

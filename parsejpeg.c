@@ -198,11 +198,11 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t *jpeg, const u
       
     case JPEG_HEADER_DQT:
       
-      return (parseBuffer(filePtr, fileSize, &jpeg->dqt, &jpeg->dqtLength));
+      return (parseMultipleBuffer(filePtr, fileSize, &jpeg->dqt, &jpeg->dqtLength, &jpeg->dqtN));
       
     case JPEG_HEADER_DHT:
 
-      return (parseDHT(filePtr, fileSize, jpeg));
+      return (parseMultipleBuffer(filePtr, fileSize, &jpeg->dht, &jpeg->dhtLength, &jpeg->dhtN));
       
     case JPEG_HEADER_DRI:
       
@@ -296,9 +296,10 @@ int parseScan(const uint8_t **filePtr, uint32_t *fileSize,
   return 0;
 }
 
-int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t *jpeg)
+int parseMultipleBuffer (const uint8_t **filePtr, uint32_t *fileSize,
+	      uint8_t ***buffer, uint16_t **bufferLength, uint16_t *bufferNumber)
 {  
-  if (!filePtr || !fileSize)
+  if (!filePtr || !fileSize || !buffer || !bufferLength || !bufferNumber)
     return 1;
   
   if (*fileSize < 2)
@@ -306,27 +307,27 @@ int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t *jpeg)
       fprintf(stderr, "ERROR: fileSize < 2, cannot read\n");
       return 1;
     }
-  const uint16_t dataLength = (endian_fix16( (uint16_t *)(*filePtr) )) - 2;
+  const uint16_t dataLengthNewConst = (endian_fix16( (uint16_t *)(*filePtr) )) - 2;
   
-  const uint16_t nHt = (jpeg->dhtN) + 1;
+  const uint16_t dataN = (*bufferNumber) + 1;
   
-  uint16_t *dhtLengthNew = realloc(jpeg->dhtLength, nHt * sizeof(uint16_t));
-  if (!dhtLengthNew) 
+  uint16_t *dataLengthNew = realloc(*bufferLength, dataN * sizeof(uint16_t));
+  if (!dataLengthNew) 
     return 1;
   
-  uint8_t **dhtNew = dhtNew = realloc(jpeg->dht,
-				      (dataLength * sizeof(uint8_t)) + sizeof(jpeg->dht));
-  if (!dhtNew)
+  uint8_t **dataNew = realloc(*buffer,
+			      (dataLengthNewConst * sizeof(uint8_t)) + sizeof(**buffer));
+  if (!dataNew)
     return 1;
   
-  dhtNew[nHt - 1] = NULL;
+  dataNew[dataN - 1] = NULL;
 
-  if(parseBuffer(filePtr, fileSize, &dhtNew[nHt - 1], &dhtLengthNew[nHt - 1]))
+  if(parseBuffer(filePtr, fileSize, &dataNew[dataN - 1], &dataLengthNew[dataN - 1]))
     return 1;
 
-  (jpeg->dhtN) = nHt;
-  jpeg->dht = dhtNew;
-  jpeg->dhtLength = dhtLengthNew;
+  *buffer = dataNew;
+  *bufferLength = dataLengthNew;
+  *bufferNumber = dataN;
   
   return 0;
 }

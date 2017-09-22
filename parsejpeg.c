@@ -29,10 +29,9 @@ jpeg_t *jpegParse(const uint8_t *fileContents, const uint32_t fileSize)
 
   fileSizePtr = fileSize;
   
-  jpeg_t *jpeg = initJpeg();
+  jpeg_t *jpeg = initJpeg();  
   
-  
-  if(parse(&fileContents, &fileSizePtr, &jpeg, &id))
+  if(parse(&fileContents, &fileSizePtr, jpeg, &id))
     {
       freeJpeg(jpeg);
       return NULL;
@@ -47,21 +46,18 @@ jpeg_t *jpegParse(const uint8_t *fileContents, const uint32_t fileSize)
 
   while ( (id != JPEG_HEADER_EOI) && fileSizePtr > 0)
     {
-      if(parse(&fileContents, &fileSizePtr, &jpeg, &id))
+      if(parse(&fileContents, &fileSizePtr, jpeg, &id))
 	{
 	  freeJpeg(jpeg);
 	  return NULL;
 	}
-
-      //if(id == JPEG_HEADER_SOF0)
-      //dumpFilePtr(&fileContents, 5);
     }
   
   return jpeg;
 }
 
 int parse(const uint8_t **filePtr, uint32_t *fileSizePtr,
-	  jpeg_t **jpeg, uint16_t *id)
+	  jpeg_t *jpeg, uint16_t *id)
 {
   if (parseHeader(filePtr, fileSizePtr, id))
     return 1;
@@ -165,7 +161,7 @@ int parseHeader(const uint8_t **filePtr, uint32_t *fileSize, uint16_t *id)
   return 0;
 }
 
-int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const uint16_t *id)
+int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t *jpeg, const uint16_t *id)
 {  
   if (!filePtr || !fileSize || !id)
     return 1;
@@ -178,31 +174,31 @@ int parseData(const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg, const 
       
     case JFIF_HEADER:
       
-      return (parseBuffer(filePtr, fileSize, &(*jpeg)->jfif, &(**jpeg).jfifLength));
+      return (parseBuffer(filePtr, fileSize, &jpeg->jfif, &jpeg->jfifLength));
       
     case JPEG_HEADER_COM:
       
-      return (parseBuffer(filePtr, fileSize, &(*jpeg)->com, &(**jpeg).comLength));
+      return (parseBuffer(filePtr, fileSize, &jpeg->com, &jpeg->comLength));
       
     case JPEG_HEADER_SOS:
       
-      if (parseBuffer(filePtr, fileSize, &(*jpeg)->sos, &(**jpeg).sosLength))
+      if (parseBuffer(filePtr, fileSize, &jpeg->sos, &jpeg->sosLength))
 	return 1;
-      if (parseScan(filePtr, fileSize, &(*jpeg)->scan, &(**jpeg).scanLength))
+      if (parseScan(filePtr, fileSize, &jpeg->scan, &jpeg->scanLength))
 	return 1;
       return 0;
       
     case JPEG_HEADER_SOF0:
       
-      return (parseBuffer(filePtr, fileSize, &(*jpeg)->sof0, &(**jpeg).sof0Length));
+      return (parseBuffer(filePtr, fileSize, &jpeg->sof0, &jpeg->sof0Length));
       
     case JPEG_HEADER_SOF2:
       
-      return (parseBuffer(filePtr, fileSize, &(*jpeg)->sof2, &(**jpeg).sof2Length));
+      return (parseBuffer(filePtr, fileSize, &jpeg->sof2, &jpeg->sof2Length));
       
     case JPEG_HEADER_DQT:
       
-      return (parseBuffer(filePtr, fileSize, &(*jpeg)->dqt, &(**jpeg).dqtLength));
+      return (parseBuffer(filePtr, fileSize, &jpeg->dqt, &jpeg->dqtLength));
       
     case JPEG_HEADER_DHT:
 
@@ -300,7 +296,7 @@ int parseScan(const uint8_t **filePtr, uint32_t *fileSize,
   return 0;
 }
 
-int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg)
+int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t *jpeg)
 {  
   if (!filePtr || !fileSize)
     return 1;
@@ -312,14 +308,14 @@ int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg)
     }
   const uint16_t dataLength = (endian_fix16( (uint16_t *)(*filePtr) )) - 2;
   
-  const uint16_t nHt = ((*jpeg)->dhtN) + 1;
+  const uint16_t nHt = (jpeg->dhtN) + 1;
   
-  uint16_t *dhtLengthNew = realloc((*jpeg)->dhtLength, nHt * sizeof(uint16_t));
+  uint16_t *dhtLengthNew = realloc(jpeg->dhtLength, nHt * sizeof(uint16_t));
   if (!dhtLengthNew) 
     return 1;
   
-  uint8_t **dhtNew = dhtNew = realloc((*jpeg)->dht,
-				      (dataLength * sizeof(uint8_t)) + sizeof((*jpeg)->dht));
+  uint8_t **dhtNew = dhtNew = realloc(jpeg->dht,
+				      (dataLength * sizeof(uint8_t)) + sizeof(jpeg->dht));
   if (!dhtNew)
     return 1;
   
@@ -328,9 +324,9 @@ int parseDHT (const uint8_t **filePtr, uint32_t *fileSize, jpeg_t **jpeg)
   if(parseBuffer(filePtr, fileSize, &dhtNew[nHt - 1], &dhtLengthNew[nHt - 1]))
     return 1;
 
-  ((*jpeg)->dhtN) = nHt;
-  (*jpeg)->dht = dhtNew;
-  (*jpeg)->dhtLength = dhtLengthNew;
+  (jpeg->dhtN) = nHt;
+  jpeg->dht = dhtNew;
+  jpeg->dhtLength = dhtLengthNew;
   
   return 0;
 }

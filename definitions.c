@@ -79,3 +79,59 @@ int freeJpeg(jpeg_t *jpeg)
 }
 
 
+node_t *treeSearch(node_t *node, uint8_t data)
+{
+  if (!node)
+    return NULL;
+  
+  if ( data == (node->value) )
+    return node;
+  
+  else if (data < node->value )
+    return treeSearch((node->l), data);
+
+  else
+    return treeSearch((node->r), data);
+
+  return NULL;
+}
+
+void treeInsert(node_t **node, uint8_t data)
+{
+  if (!node)
+    return;
+
+  if (!*node)
+    {
+      *node = malloc(sizeof(node_t));
+      if (!*node)
+	return;
+
+      (*node)->l = NULL;
+      (*node)->r = NULL;
+      (*node)->value = data; 
+    }
+
+  else if (data < (*node)->value)
+    treeInsert(node, data);
+  else if (data > (*node)->value)
+    treeInsert(node, data);
+  
+  return;
+}
+
+void treeFree(node_t *node)
+{
+  if (!node)
+    return;
+
+  if (node->l)
+    treeFree(node->l);
+
+  if (node->r)
+    treeFree(node->r);
+
+  free(node);
+
+  return;
+}

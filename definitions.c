@@ -98,25 +98,22 @@ node_t *treeSearch(node_t *node, uint8_t data)
 
 void treeInsert(node_t **node, uint8_t data)
 {
-  if (!node)
-    return;
-
   if (!*node)
     {
       *node = malloc(sizeof(node_t));
       if (!*node)
 	return;
-
       (*node)->l = NULL;
       (*node)->r = NULL;
-      (*node)->value = data; 
+      (*node)->value = data;
     }
 
   else if (data < (*node)->value)
-    treeInsert(node, data);
+    treeInsert(&(*node)->l, data);
+
   else if (data > (*node)->value)
-    treeInsert(node, data);
-  
+    treeInsert(&(*node)->r, data);
+
   return;
 }
 
